@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hello</title>
+    <link rel="stylesheet" href="staticFile/css/register.css" />
+    <link rel="icon" href="staticFile/icons/icon_Dorado.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="staticFile/icons/icon_Dorado.ico" type="image/x-icon"/>
+</head>
+<body style="background-color: gainsboro">
+    {{/*<div class="header">
+        <div class="userInfoCon">
+            <ul>
+                <div>
+                    <i></i>
+                    <a href="index.html">首页</a>
+                </div>
+                <ol>
+                    <li>
+                        <a href="login.html">登录</a>
+                    </li>
+                    <b></b>
+                    <i><img src="img/pic_05.jpg"></i>
+                    <li>
+                        <a href="#">我的订单</a>
+                    </li>
+                    <b></b>
+                    <i><img src="img/pic_07.jpg"></i>
+                    <li>
+                        <a href="#">购物车</a>
+                    </li>
+                    <b></b>
+                    <li>
+                        <a href="#">客户服务</a>
+                        <span></span>
+                    </li>
+                    <b></b>
+                    <i><img src="img/pic_09.jpg"></i>
+                    <li>
+                        <a href="#">商家后台</a>
+                        <span></span>
+                    </li>
+                </ol>
+            </ul>
+        </div>
+    </div>*/}}
+    <div style="text-align: center; width: 100%">
+        <form method="post" action="/sign">
+            <div>
+                <label> 姓名：</label>
+                <input type="text" name="UserName" >
+            </div>
+            <div>
+                <label> 密码：</label>
+                <input type="password" name="UserPwd">
+            </div>
+            <div>
+                <label> 年龄：</label>
+                <input type="number" name="UserAge">
+            </div>
+            <div>
+                <label> 学号：</label>
+                <input type="number" name="UserStuNo">
+            </div>
+            <div>
+                <label> 邮箱：</label>
+                <input type="email" name="UserEmail">
+            </div>
+            <div>
+                <label> 宿舍号：</label>
+                <input type="text" name="UserDomNo">
+            </div>
+            <div>
+                <input type="submit" value="注册">
+            </div>
+        </form>
+    </div>
+    {{.alert}}
+</body>
+</html>
