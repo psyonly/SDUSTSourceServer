@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Messages</title>
+</head>
+<body>
+<div id="msg">
+    $obj1 := {{ . }}
+</div>
+<p id="demo"></p>
+<script>
+    var text =
+        '{"firstName":"Elon","lastName":"Musk" }';
+    obp = {{.message}}
+    obj = JSON.parse(text);
+    document.getElementById("demo").innerHTML =
+        obj.firstName + " " + obj.lastName;
+    window.alert(obp)
+    /*var content = document.getElementById("msg").innerText
+    window.alert(content)*/
+</script>
+</body>
+</html>
