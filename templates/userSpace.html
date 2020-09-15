@@ -34,7 +34,9 @@
                     </li>
                     <b></b>
                     <li>
-                        <a href="#">待开发</a>
+                        <a href="/userSpace">
+                            <img id="hi" width="24px" height="24px" align="middle">
+                        </a>
                         <span></span>
                     </li>
                 </ol>
@@ -58,5 +60,14 @@
     </div>
     <br/>
     <br/>
+    <div>
+        <form action="/userSpace/message/headImage" method="post" enctype="multipart/form-data">
+            <input type="file" name="headImage">
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+    <script>
+        document.getElementById("hi").src = "root/" + {{.userHeadImageDir}} + "/headImage.jpg"
+    </script>
 </body>
 </html>

@@ -26,9 +26,7 @@
     </style>
 </head>
 <body>
-{{/*
-<p id="demo">aa</p>
-<p id="demoMy">bb</p>*/}}
+<p id="demo">{{.user}}</p>
 <div id="msgSender">
     <form method="post" action="/userSpace/message/sendMSG">
         <label>发送给</label>
@@ -75,7 +73,7 @@
         var tr=document.createElement("tr");
         tbody.appendChild(tr);
         //3,往tr每一行里面创建单元格（跟数据有关系的3个单元格），td单元格的数量取决于每个对象的属性个数 for循环遍历对象 datas[i]
-        if(obj.length == 0){
+        if(obj.length === 0){
             var td=document.createElement("td");  //创建单元格
             tr.appendChild(td);
             td.innerHTML="No new messages";
