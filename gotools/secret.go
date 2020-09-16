@@ -1,6 +1,16 @@
 package gotools
 
-import "fmt"
+import (
+	"fmt"
+	"golang.org/x/crypto/md4"
+	"io"
+)
+
+const (
+	salt1 = "kcats"
+	salt2 = "stmtn"
+	salt3 = "myktm"
+)
 
 var NUMHASH = map[rune]string{
 	'0': "h0",
@@ -87,4 +97,18 @@ func strReverse(str *[]rune, start, end int, lens int) {
 		p1++
 		p2--
 	}
+}
+
+// 返回pwd的加密码
+func OnLock(pwd string, uName string) string {
+	h := md4.New()
+	io.WriteString(h, pwd)
+
+	io.WriteString(h, salt1)
+	io.WriteString(h, salt2)
+	io.WriteString(h, uName)
+	io.WriteString(h, salt3)
+
+	fin := fmt.Sprintf("%X", h.Sum(nil))
+	return fin
 }

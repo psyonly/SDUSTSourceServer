@@ -2,8 +2,9 @@ package gotools
 
 import (
 	model "Gin/gorm2/models"
+	"fmt"
 	"github.com/jinzhu/gorm"
-	"os"
+	"mime/multipart"
 	"sync"
 )
 
@@ -12,11 +13,11 @@ type UASManager struct {
 	lock         sync.Mutex
 	fileDir      string
 	addrPreFix   string
-	MAXSpaceSize uint64
+	MAXSpaceSize int64
 }
 
 // 新建一个UAS管理类的方法， 第一个参数是当前类型UAS的根目录， 第二个参数是UAS地址空间前缀， 最后一个参数是当前类型的UAS空间最大值
-func NewUasManager(fd string, addrPF string, maxSS uint64) *UASManager {
+func NewUasManager(fd string, addrPF string, maxSS int64) *UASManager {
 	return &UASManager{
 		lock:         sync.Mutex{},
 		fileDir:      fd,
@@ -38,8 +39,8 @@ func (um *UASManager) InitUserAddrSpace(uid string) *model.UserAddrSpace {
 	newUAS.Set(uid, um.CreateUASAddrDir(uid), 0, um.MAXSpaceSize)
 
 	// 申请建立文件区
-	os.Mkdir(um.fileDir+"/"+newUAS.UserAddr, os.ModePerm)
-	os.Mkdir(um.fileDir+"/"+newUAS.UserAddr+"/"+"HeadImage", os.ModePerm)
+	CreateDir(um.fileDir+"/"+newUAS.UserAddr, "root")
+	CreateDir(um.fileDir+"/"+newUAS.UserAddr, "headImg")
 	// TODO 其他文件夹建立，配置任务
 
 	return &newUAS
@@ -61,4 +62,24 @@ func (um *UASManager) GetUASFileDir(uid string, fileDirName string, db *gorm.DB)
 	uas := CheckUASFromDB(uid, db)
 	fd = fd + "/" + uas.UserAddr + "/" + fileDirName
 	return fd
+}
+
+// 保存指定用户的某个文件 返回一个保存路径，同时在数据库中刷新数据内容
+func (um *UASManager) SaveUserFile(file *multipart.FileHeader, uid string, db *gorm.DB) (dst string) {
+	// 从数据库查找uid对应的用户数据记录
+	uas := &model.UserAddrSpace{}
+	FindUAS(uas, "user_id = ?", uid, db)
+	// 创建路径目录
+	dst = fmt.Sprintf("%s/%s/HeadImage/%s", um.GetFileDir(), uas.UserAddr, "headImage.jpg")
+
+	// 获得用户空间目录大小
+	uas.CurrentSpace, _ = GetDirSize(um.GetFileDir() + "/" + uas.UserAddr)
+	if uas.CurrentSpace < 14 {
+		uas.CurrentSpace += file.Size
+	}
+	// 从数据库更新当前值
+	UpdateUASSingle(uas, "current_space", uas.CurrentSpace, db)
+
+	fmt.Println("Now users current space is ", uas.CurrentSpace, " / ", uas.MAXSpace)
+	return
 }

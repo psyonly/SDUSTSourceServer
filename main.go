@@ -60,10 +60,12 @@ func getIP() (ip string, err error) {
 	return "", errors.New("valid local IP not found")
 }
 
+// 主页/注册页
 func IndexPage(c *gin.Context) {
 	c.HTML(http.StatusOK, "index.html", nil)
 }
 
+// 登录页/个人空间页，如若检查session存在则跳转个人空间页，否则进入登录页
 func Root(c *gin.Context) {
 	_, exist := SessionManager.CheckSession(c.Request)
 	if exist {
@@ -73,10 +75,12 @@ func Root(c *gin.Context) {
 	c.HTML(http.StatusOK, "login.html", nil)
 }
 
+// 登陆页面
 func LoginPage(c *gin.Context) {
 	c.HTML(http.StatusOK, "login.html", nil)
 }
 
+// 上传页面
 func UploadPage(c *gin.Context) {
 	ss, _ := SessionManager.CheckSession(c.Request)
 	c.HTML(http.StatusOK, "upload.html", gin.H{
@@ -84,16 +88,22 @@ func UploadPage(c *gin.Context) {
 	})
 }
 
+// 用户空间主页
 func UserSpaceRoot(c *gin.Context) {
 	ss, _ := SessionManager.CheckSession(c.Request)
 	u := tools.CheckUserFromSession(ss, db)
 	c.HTML(http.StatusOK, "userSpace.html", gin.H{
 		"finish":           u.CheckUsersIFMFinish(),
-		"name":             u.Name + " 欢迎回来",
 		"userHeadImageDir": UASManager.GetUASFileDir(ss.Get("accountNum").(string), "HeadImage", db),
+		"name":             u.Name,
+		"stuNo":            u.StuNo,
+		"domNo":            u.DomNo,
+		"eMail":            u.Email,
+		"age":              u.Age,
 	})
 }
 
+// 用户空间消息页
 func UserSpaceMessage(c *gin.Context) {
 	ss, _ := SessionManager.CheckSession(c.Request)
 	u := tools.CheckUserFromSession(ss, db)
@@ -107,6 +117,7 @@ func UserSpaceMessage(c *gin.Context) {
 	})
 }
 
+// 用户发送消息
 func UserSpaceMessageSendMSGPost(c *gin.Context) {
 	ss, _ := SessionManager.CheckSession(c.Request)
 	u := tools.CheckUserFromSession(ss, db)
@@ -136,22 +147,27 @@ func UserSpaceMessageSendMSGPost(c *gin.Context) {
 	//c.Redirect(http.StatusFound, "")
 }
 
+// 用户提交修改头像
 func UserSpaceHeadImagePost(c *gin.Context) {
 	file, err := c.FormFile("headImage")
 	if err != nil {
 		fmt.Println(tools.PrintLogHead(), "there is an err happened when upload the image.")
 		return
 	}
+	// 获取session
 	ss, _ := SessionManager.CheckSession(c.Request)
+	// 根据session获取sid
 	uasID := ss.Get("accountNum")
-	uas := &model.UserAddrSpace{}
-	db.Find(&uas, "user_id = ?", uasID)
-	dst := fmt.Sprintf("%s/%s/HeadImage/%s", UASManager.GetFileDir(), uas.UserAddr, "headImage.jpg")
-	fmt.Println(tools.PrintLogHead(), "Dir is ", dst)
+
+	// 应该交由UASManager来执行存储过程和数据库过程
+	dst := UASManager.SaveUserFile(file, uasID.(string), db)
+
+	// 按照指定位置保存并重定向
 	c.SaveUploadedFile(file, dst)
 	c.Redirect(http.StatusFound, "/userSpace")
 }
 
+// 下载中心页面
 func DownLoadCenter(c *gin.Context) {
 	ss, _ := SessionManager.CheckSession(c.Request)
 	c.HTML(http.StatusOK, "downloadCenter.html", gin.H{
@@ -161,11 +177,17 @@ func DownLoadCenter(c *gin.Context) {
 	})
 }
 
+// 注册提交
+// 检查用户信息是否有重复
+// 对用户密码加密
+// 数据库存储用户信息表
+// 初始化session
+// 新建uas 数据库存储uas
 func SignPagePost(c *gin.Context) {
 	u := model.SDUSTUser{
 		Model:    gorm.Model{},
 		Name:     c.PostForm("UserName"),
-		Password: c.PostForm("UserPwd"),
+		Password: tools.OnLock(c.PostForm("UserPwd"), c.PostForm("UserStuNo")),
 		Age:      0,
 		StuNo:    c.PostForm("UserStuNo"),
 		Email:    c.PostForm("UserEmail"),
@@ -191,6 +213,7 @@ func SignPagePost(c *gin.Context) {
 	})
 }
 
+// 登录页提交
 func LoginPagePost(c *gin.Context) {
 	if c.PostForm("stuNo") == "" {
 		c.HTML(http.StatusOK, "login.html", gin.H{
@@ -199,8 +222,8 @@ func LoginPagePost(c *gin.Context) {
 	} else {
 		u := model.SDUSTUser{}
 		db.Find(&u, "stu_no = ?", c.PostForm("stuNo"))
-		fmt.Println(u.Password == c.PostForm("pwd"))
-		if u.Name != "" && u.Password == c.PostForm("pwd") { //登陆成功刷新Cookie/Session
+		fmt.Println(u.Password == tools.OnLock(c.PostForm("pwd"), c.PostForm("stuNo")))
+		if u.Name != "" && u.Password == tools.OnLock(c.PostForm("pwd"), c.PostForm("stuNo")) { //登陆成功刷新Cookie/Session
 			ss := SessionManager.SessionStart(c.Writer, c.Request)
 			ss.Set("accountNum", u.StuNo)
 			c.Redirect(http.StatusFound, "/userSpace")
@@ -213,6 +236,7 @@ func LoginPagePost(c *gin.Context) {
 	}
 }
 
+// 用户上传提交
 func UsersUploadPost(c *gin.Context) {
 	file, err := c.FormFile("usersFile")
 	if err != nil {
@@ -225,6 +249,13 @@ func UsersUploadPost(c *gin.Context) {
 	c.HTML(http.StatusOK, "upload.html", gin.H{
 		"ifm":              tools.H5trans("<p><i>Upload success!</i></p>"),
 		"userHeadImageDir": UASManager.GetUASFileDir(ss.Get("accountNum").(string), "HeadImage", db),
+	})
+}
+
+// 404
+func NotFound(c *gin.Context) {
+	c.JSON(http.StatusNotFound, gin.H{
+		"msg": "地址不存在",
 	})
 }
 
@@ -244,6 +275,9 @@ func main() {
 	router.StaticFS("/downloadMovies", http.Dir("D:\\Movies"))
 
 	router.LoadHTMLGlob("templates/*") //load all files; if has child dir use like "templates/**/*"
+
+	// 404 response
+	router.NoRoute(NotFound)
 
 	router.GET("/indexPage", IndexPage)
 

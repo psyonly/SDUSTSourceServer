@@ -90,3 +90,11 @@ func SetUsersCookie(c *gin.Context, u models.SDUSTUser, ServerIP string) {
 		false,
 		true)
 }
+
+func FindUAS(uas *models.UserAddrSpace, queryStr string, query string, db *gorm.DB) {
+	db.Find(&uas, queryStr, query)
+}
+
+func UpdateUASSingle(uas *models.UserAddrSpace, query string, val interface{}, db *gorm.DB) {
+	db.Model(uas).Update(query, val)
+}
