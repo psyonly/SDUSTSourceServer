@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"> 
+    <title>SDUSTRS-我的空间</title>
+    <!--is also the sign page of the web site-->
+	<link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">  
+    <link rel="icon" href="staticFile/icons/icon_Dorado.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="staticFile/icons/icon_Dorado.ico" type="image/x-icon"/>
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="navbar navbar-default" role="navigation">
+        <div class="navbar-header">
+            <a href="#" class="navbar-brand">
+                <!--<img src="../static/img/Anchovy Star.png" alt="20px">-->
+                <i><b>SRS</b></i>
+            </a>
+        </div>
+        <ul class="nav navbar-nav nav-pills pull-right">
+            <li><a href="/indexPage"><span class="glyphicon glyphicon-home"></span>主页</a></li>
+            <li><a href="/loginPage"><span class="glyphicon glyphicon-th-large"></span>登录</a></li>
+            <li><a href="/downloadCenter"><span class="glyphicon glyphicon-download"></span>下载中心</a></li>
+            <li><a href="/uploadPage"><span class="glyphicon glyphicon-upload"></span>上传中心</a></li>
+            <li class="dropdown">
+                <a href="" class="dropdown-toggle" data-toggle="dropdown">
+                    <img id="hi" width="24px" height="24px" src="../statics/Fishes/Anchovy%20Star.png">
+                    我的
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                <li><a href="/userSpace/message">消息</a></li>
+                <li><a href="/userSpace">个人资料</a></li>
+                <li><a href="##">云空间</a></li>
+                <li><a href="##">Others</a></li>
+                </ul>
+            </li>
+            <li><a href="##"><span class="glyphicon glyphicon-stats"></span>关于我们</a></li>
+        </ul>
+        <!--<form class="navbar-form navbar-right" role="search">
+            <div class="form-group">
+                <input type="text" class="form-control" placeholder="search...">
+            </div>
+            <button type="submit" class="btn btn-default">
+                Searching
+            </button>
+        </form>-->
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <h4 class="text-info">Hi, {{ .name }} Welcome</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <h3 class="text-success">
+                            日志
+                            <small>var 1.0.5</small>
+                        </h3>
+                        <p id="versionScript">
+
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-md-offset-2">
+                <div class="panel panel-primary">
+                    <div class="panel panel-heading">
+                        <h3 class="panel-title">我的信息</h3>
+                    </div>
+                    <table class="table">
+                        <th>条目</th>
+                        <th>值</th>
+                        <tr><td>资料完成度</td><td>{{.finish}}%</td></tr>
+                        <tr><td>学号</td><td>{{.stuNo}}</td></tr>
+                        <tr><td>宿舍号</td><td>{{.domNo}}</td></tr>
+                        <tr><td>邮箱</td><td>{{.eMail}}</td></tr>
+                        <tr><td>年龄</td><td>{{.age}}</td></tr>
+                    </table>
+                    <div class="panel-body">
+                        <form role="form" method="POST" action="/userSpace/message/headImage" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label class="control-label">修改头像</label>
+                                <input class="form-control" type="file" name="headImage">
+                                <input class="form-control" type="submit" value="上传">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById("hi").src = "root/" + {{ .userHeadImageDir }} + "/headImage.jpg"
+
+        document.getElementById("versionScript").innerHTML = {{ .versionScript}}
+    </script>
+</body>
+</html>

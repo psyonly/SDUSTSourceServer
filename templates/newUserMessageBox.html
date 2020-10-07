@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"> 
+    <title>SDUSTRS-我的空间</title>
+    <!--is also the sign page of the web site-->
+	<link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">  
+    <link rel="icon" href="staticFile/icons/icon_Dorado.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="staticFile/icons/icon_Dorado.ico" type="image/x-icon"/>
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="navbar navbar-default" role="navigation">
+        <div class="navbar-header">
+            <a href="#" class="navbar-brand">
+                <!--<img src="../static/img/Anchovy Star.png" alt="20px">-->
+                <i><b>SRS</b></i>
+            </a>
+        </div>
+        <ul class="nav navbar-nav nav-pills pull-right">
+            <li><a href="/indexPage"><span class="glyphicon glyphicon-home"></span>主页</a></li>
+            <li><a href="/loginPage"><span class="glyphicon glyphicon-th-large"></span>登录</a></li>
+            <li><a href="/downloadCenter"><span class="glyphicon glyphicon-download"></span>下载中心</a></li>
+            <li><a href="/uploadPage"><span class="glyphicon glyphicon-upload"></span>上传中心</a></li>
+            <li class="dropdown">
+                <a href="" class="dropdown-toggle" data-toggle="dropdown">
+                    <img id="hi" width="24px" height="24px" src="">
+                    我的
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                <li><a href="/userSpace/message">消息</a></li>
+                <li><a href="/userSpace">个人资料</a></li>
+                <li><a href="##">云空间</a></li>
+                <li><a href="##">Others</a></li>
+                </ul>
+            </li>
+            <li><a href="##"><span class="glyphicon glyphicon-stats"></span>关于我们</a></li>
+        </ul>
+        <!--<form class="navbar-form navbar-right" role="search">
+            <div class="form-group">
+                <input type="text" class="form-control" placeholder="search...">
+            </div>
+            <button type="submit" class="btn btn-default">
+                Searching
+            </button>
+        </form>-->
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title"><b>发送器</b></h4>
+                    </div>
+                    <div class="panel-body">
+                        <p><lead>可用的公共资源</lead></p>
+                        <div>
+                            <form role="form" action="/userSpace/message/sendMSG" method="POST">
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-xs-3">
+                                            <label class="control-label">发送给</label>
+                                        </div>
+                                        <div class="col-xs-4 col-xs-offset-5 text-danger">
+                                            <label id="nullReceiver" class="control-label"></label>
+                                        </div>
+                                    </div>
+                                    <input name="MSG_receiver" class="form-control" type="text">
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">内容</label>
+                                    <textarea name="MSG_content" class="form-control"></textarea>
+                                </div>
+                                <div class="form-group col-xs-5">
+                                    <input type="submit" class="btn btn-success" value="Send">
+                                </div>
+                            </form>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-6 col-xs-offset-2">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            消息记录
+                        </h4>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-bordered table-hover table-striped">
+                            <thead>
+                                <tr class="active">
+                                    <th>名称</th>
+                                    <th>地址</th>
+                                    <th>Content</th>
+                                    <th>Read</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById("hi").src = "root/" + {{ .userHeadImageDir }} + "/headImage.jpg"
+
+        var nullReceiver = {{ .alert}}
+        document.getElementById("nullReceiver").innerText = nullReceiver;
+        var obp = {{ .msg}}
+            //window.alert(obp)
+        console.log(obp)
+        obj = JSON.parse(obp);
+        var tbody=document.querySelector("tbody");
+        for(var i=0;i<obj.length;i++)  //外面的for循环 是 行tr
+        {
+            var tr=document.createElement("tr");
+            tbody.appendChild(tr);
+            //3,往tr每一行里面创建单元格（跟数据有关系的3个单元格），td单元格的数量取决于每个对象的属性个数 for循环遍历对象 datas[i]
+            if(obj.length === 0){
+                var td=document.createElement("td");  //创建单元格
+                tr.appendChild(td);
+                td.innerHTML="No new messages";
+            }
+            var td=document.createElement("td");  //创建单元格
+            tr.appendChild(td);
+            td.innerHTML=obj[i].Sender; //把对象里面的属性值 datas[i][k]给td
+            var td=document.createElement("td");  //创建单元格
+            tr.appendChild(td);
+            td.innerHTML=obj[i].Receiver; //把对象里面的属性值 datas[i][k]给td
+            var td=document.createElement("td");  //创建单元格
+            tr.appendChild(td);
+            td.innerHTML=obj[i].Content; //把对象里面的属性值 datas[i][k]给td
+            var td=document.createElement("td");  //创建单元格
+            tr.appendChild(td);
+            td.innerHTML=obj[i].READ; //把对象里面的属性值 datas[i][k]给td
+        }
+    </script>
+</body>
+</html>
