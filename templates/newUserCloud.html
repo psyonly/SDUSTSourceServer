@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"> 
+    <title>SDUSTRS-Cloud</title>
+    <!--is also the sign page of the web site-->
+	<link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">  
+    <link rel="icon" href="staticFile/icons/icon_Dorado.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="staticFile/icons/icon_Dorado.ico" type="image/x-icon"/>
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="navbar navbar-default" role="navigation">
+        <div class="navbar-header">
+            <a href="#" class="navbar-brand">
+                <!--<img src="../static/img/Anchovy Star.png" alt="20px">-->
+                <i><b>SRS</b></i>
+            </a>
+        </div>
+        <ul class="nav navbar-nav nav-pills pull-right">
+            <li><a href="/indexPage"><span class="glyphicon glyphicon-home"></span>主页</a></li>
+            <li><a href="/loginPage"><span class="glyphicon glyphicon-th-large"></span>登录</a></li>
+            <li><a href="/downloadCenter"><span class="glyphicon glyphicon-download"></span>下载中心</a></li>
+            <li><a href="/uploadPage"><span class="glyphicon glyphicon-upload"></span>上传中心</a></li>
+            <li class="dropdown">
+                <a href="" class="dropdown-toggle" data-toggle="dropdown">
+                    <img id="hi" width="24px" height="24px" src="staticFile/Fishes/Dorado.png">
+                    我的
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                <li><a href="/userSpace/message"><span class="glyphicon glyphicon-envelope"></span>消息</a></li>
+                <li><a href="/userSpace"><span class="glyphicon glyphicon-th-list"></span>个人资料</a></li>
+                <li><a href="/userSpace/cloud"><span class="glyphicon glyphicon-cloud"></span>云空间</a></li>
+                <li><a href="##"><span class="glyphicon glyphicon-tree-deciduous"></span>Others</a></li>
+                </ul>
+            </li>
+            <li><a href="##"><span class="glyphicon glyphicon-stats"></span>关于我们</a></li>
+        </ul>
+        <!--<form class="navbar-form navbar-right" role="search">
+            <div class="form-group">
+                <input type="text" class="form-control" placeholder="search...">
+            </div>
+            <button type="submit" class="btn btn-default">
+                Searching
+            </button>
+        </form>-->
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h4 class="panel-title"><b>下载</b></h4>
+                    </div>
+                    <div class="panel-body">
+                        <p><lead>输入指定接受者的学号和内容</lead></p>
+                        <div>
+                            <form role="form" action="/userSpace/cloud-download" method="POST">
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-xs-3">
+                                            <label id="url" class="control-label">url</label>
+                                        </div>
+                                        <div class="col-xs-4 col-xs-offset-5 text-danger">
+                                            <label id="nullReceiver" class="control-label"></label>
+                                        </div>
+                                    </div>
+                                    <input id="searchDir" name="dir" class="form-control" type="text">
+                                </div>
+                                <div class="form-group col-xs-5">
+                                    <input type="submit" class="btn btn-success" value="下载">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-6 col-xs-offset-2">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            我的云空间目录
+                        </h4>
+                    </div>
+                    <div class="panel-body">
+                        <p><i>将对应的链接复制到框内即可下载对应文件</i></p>
+                        <form role="form" action="/downloadTest" method="POST">
+                            <table class="table table-condensed table-bordered table-hover">
+                                <thead>
+                                    <tr class="active warning">
+                                        <th width="25%"><span class="label label-info">当前目录</span></th>
+                                        <th id="tmpDir" width="75%"></th>
+                                    </tr>
+                                    <tr class="active">
+                                        <div>
+                                            <th width="25%"><span class="label label-default">文件类型</span></th>
+                                        </div>
+                                        <div>
+                                            <th width="75%"><span class="label label-default">文件地址</span></th>
+                                        </div>
+                                    </tr>
+                                </thead>
+                                <tbody id="render">
+                                    
+                                </tbody>
+                            </table>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var msg = {{.}}
+
+        document.getElementById("hi").src = msg['userHeadImageDir'] + '/headImage.jpg'
+
+        console.log(msg)
+
+        var dict = {}
+
+        function TreeNode(name, type){
+            this.Name = (name === undefined ? null : name)
+            this.Type = (type === undefined ? 1 : type)
+            console.log('Est:', this.Type, this.Name)
+            if(this.Type == -1){
+                dict['root'] = this
+                this.Child = []
+                return
+            }else if(this.Type == 0)
+                this.Child = []
+            else
+                this.Child = null
+            SetTreeFather(this)
+            if(this.Type == 0)
+                dict[this.Name] = this
+        }
+        
+        function SetTreeFather(node){
+            var name = node.Name
+            for(var i=name.length; i>=0 && name[i]!='\\'; i--);
+            if(i >= 0){
+                var str = name.slice(0, i)
+                dict[str].Child.push(node)
+            }else{
+                dict['root'].Child.push(node)
+            }
+        }
+
+        // if the node's parent is not root it will return its parent else null
+        function GetParent(node){
+            var name = node.Name
+            for(var i=name.length; i>=0 && name[i]!='\\'; i--);
+            if(i > 0){
+                var str = name.slice(0, i)
+                return str
+            }
+            return null
+        }
+
+        function File2Tree(files){
+            var root = new TreeNode('\\', -1)
+            for(var i=1; i<files.length; i++){
+                var node = new TreeNode(files[i].FileAddr, files[i].FileType)
+            }
+            Render(dict['root'])
+            for(var i=0; i<dict['root'].Child.length; i++){
+                console.log(dict['root'].Child[i])
+            }
+        }
+
+        function Render(node){
+            document.getElementById('tmpDir').innerHTML = node.Name
+            var tbody = document.getElementById('render')
+            var arr = node.Child
+            
+            var render2table = function(element){
+                var tr = document.createElement('tr')
+                tbody.appendChild(tr)
+                var td1 = document.createElement('td')
+                tr.appendChild(td1)
+                // add span
+                var icon = document.createElement('span')
+                icon.classList = 'label label-default'
+                var typ = 'Unknow'
+                switch(element.Type){
+                    case 0:
+                        icon.classList = 'label label-warning'
+                        typ = '文件夹'
+                        break
+                    default :
+                        icon.classList = 'label label-success'
+                        typ = '文件'
+                        break
+                }
+                icon.innerHTML = typ
+                td1.appendChild(icon)
+                // add <a> & onclick func
+                var td2 = document.createElement('td')
+                tr.appendChild(td2)
+                var a = document.createElement('a')
+                //a.setAttribute('value', element.Name)
+                a.id = element.Name
+                a.classList = 'btn btn-link btn-xs'
+                a.innerHTML = element.Name
+                if(arr[i].Type == 0){
+                    a.onclick = function(){
+                        console.log(a.id)
+                        tbody.innerHTML = ''
+                        Render(dict[a.id])
+                    }
+                }else{
+                    a.onclick = function(){
+                        document.getElementById('searchDir').value = this.innerHTML
+                    }
+                }
+                td2.appendChild(a)
+            }
+            
+            var addParent = function (){// just render not real node
+                var tr = document.createElement('tr')
+                tbody.appendChild(tr)
+                var td1 = document.createElement('td')
+                tr.appendChild(td1)
+                // add span
+                var icon = document.createElement('span')
+                icon.classList = 'label label-primary'
+                var typ = '父目录'
+                icon.innerHTML = typ
+                td1.appendChild(icon)
+                // add <a> & onclick func
+                var td2 = document.createElement('td')
+                tr.appendChild(td2)
+                var a = document.createElement('a')
+                var par = GetParent(node)
+                console.log('par is', par, par == null)
+                a.id = (par === null ? 'root' : par)
+                a.classList = 'btn btn-link btn-xs'
+                a.innerHTML = '上一级'
+                // add onclick func
+                if(a.id != null){
+                    a.onclick = function(){
+                        console.log('ADD onclick FUNC', a.id)
+                        tbody.innerHTML = ''
+                        Render(dict[a.id])
+                    }
+                }
+                td2.appendChild(a)
+            }()
+
+            for(var i=0; i<arr.length; i++){
+                render2table(arr[i])
+            }
+        }
+
+        function AddSpace(num){
+            str = ''
+            for(var i=0; i<num; i++){
+                str += '--'
+            }
+            return str
+        }
+        var layer = 0
+        var NOW
+        function Walk(t){
+            //console.log('start')
+            console.log('|' + AddSpace(layer) + t.Name)
+            if(t.Child===null)return
+            layer++
+            for(var i=0; i<t.Child.length; i++){
+                Walk(t.Child[i])
+            }
+            layer--
+        }
+        File2Tree(msg['files'])
+    </script>
+</body>
+</html>

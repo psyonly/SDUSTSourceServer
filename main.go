@@ -3,14 +3,17 @@ package main
 import (
 	tools "Gin/gorm2/gotools"
 	model "Gin/gorm2/models"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
+	"os"
+	"path"
 	"strconv"
 	"time"
 )
@@ -18,7 +21,7 @@ import (
 // ding -config=ding.cfg -subdomain=zsc 8080
 var (
 	ServerIP string
-	Version  string = "version_1.0.5"
+	Version  string = "version_1.1.1"
 )
 
 var SessionManager *tools.Manager
@@ -64,7 +67,9 @@ func getIP() (ip string, err error) {
 
 // 主页/注册页
 func IndexPage(c *gin.Context) {
-	c.HTML(http.StatusOK, "newIndexPage.html", nil)
+	c.HTML(http.StatusOK, "newIndexPage.html", gin.H{
+		"alert": "null",
+	})
 }
 
 // 登录页/个人空间页，如若检查session存在则跳转个人空间页，否则进入登录页
@@ -74,12 +79,14 @@ func Root(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/userSpace")
 		return
 	}
-	c.HTML(http.StatusOK, "newLoginPage.html", nil)
+	c.Redirect(http.StatusFound, "/loginPage")
 }
 
 // 登陆页面
 func LoginPage(c *gin.Context) {
-	c.HTML(http.StatusOK, "newLoginPage.html", nil)
+	c.HTML(http.StatusOK, "newLoginPage.html", gin.H{
+		"alert": "null",
+	})
 }
 
 // 上传页面
@@ -111,13 +118,11 @@ func UserSpaceMessage(c *gin.Context) {
 	ss, _ := SessionManager.CheckSession(c.Request)
 	u := tools.CheckUserFromSession(ss, db)
 	fmt.Println(u)
-	msg := []model.UsersMessage{}
+	msg := make([]model.UsersMessage, 0, 0)
 	db.Where("Receiver = ?", u.StuNo).Find(&msg)
-	str, _ := json.Marshal(msg)                            //json序列化对象（此处为Byte）
 	c.HTML(http.StatusOK, "newUserMessageBox.html", gin.H{ //转换为string类型以模板的形式传递给前端
 		"userHeadImageDir": UASManager.GetUASFileDir(ss.Get("accountNum").(string), "HeadImage", db),
-		"msg":              string(str),
-		"user":             u.Name,
+		"messages":         msg,
 	})
 }
 
@@ -127,13 +132,17 @@ func UserSpaceMessageSendMSGPost(c *gin.Context) {
 	u := tools.CheckUserFromSession(ss, db)
 	r := model.SDUSTUser{}
 	db.Find(&r, "stu_no = ?", c.PostForm("MSG_receiver")) //从提交的表单中获取接收者信息
-	msgR := make([]model.UsersMessage, 2)
-	db.Where("Receiver = ?", u.StuNo).Find(&msgR) // 从数据库中查找当前用户的消息列表
-	str, _ := json.Marshal(msgR)
-	alert := "" //查找不到反馈
-	if r.Name == "" {
+	alert := ""                                           //查找不到反馈
+	if r.Name == "" {                                     // 无效的消息重置页面
+		msgR := make([]model.UsersMessage, 0, 0)
+		db.Where("Receiver = ?", u.StuNo).Find(&msgR) // 从数据库中查找当前用户的消息列表
 		alert = "用户不存在"
-	} else {
+		c.HTML(http.StatusOK, "newUserMessageBox.html", gin.H{
+			"userHeadImageDir": UASManager.GetUASFileDir(ss.Get("accountNum").(string), "HeadImage", db),
+			"messages":         msgR,
+			"alert":            alert,
+		})
+	} else { // 有效则保存消息并重定向
 		msgS := model.UsersMessage{
 			Model:    gorm.Model{},
 			Sender:   u.StuNo,
@@ -143,12 +152,8 @@ func UserSpaceMessageSendMSGPost(c *gin.Context) {
 			READ:     false,
 		}
 		db.Create(&msgS)
+		c.Redirect(http.StatusFound, "/userSpace/message")
 	}
-	c.HTML(http.StatusOK, "newUserMessageBox.html", gin.H{
-		"userHeadImageDir": UASManager.GetUASFileDir(ss.Get("accountNum").(string), "HeadImage", db),
-		"msg":              string(str),
-		"alert":            alert,
-	})
 	//c.Redirect(http.StatusFound, "")
 }
 
@@ -172,13 +177,48 @@ func UserSpaceHeadImagePost(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/userSpace")
 }
 
+func UserSpaceCloud(c *gin.Context) {
+	ss, _ := SessionManager.CheckSession(c.Request)
+	fp := UASManager.GetUASCloudPaths(ss.Get("accountNum").(string), db)
+	c.HTML(http.StatusOK, "newUserCloud.html", gin.H{
+		"userHeadImageDir": UASManager.GetUASFileDir(ss.Get("accountNum").(string), "HeadImage", db),
+		"files":            fp,
+	})
+}
+
+func UserSpaceCloudDownload(c *gin.Context) {
+	dir := c.PostForm("dir")
+	ss, _ := SessionManager.CheckSession(c.Request)
+	file, err := os.Open("./" + UASManager.GetFileDir() + "/" + tools.CheckUASFromDB(ss.Get("accountNum").(string), db).UserAddr + "/" + dir)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer file.Close()
+	fileName := path.Base(dir)
+	fileName = url.QueryEscape(fileName)
+	output, _ := ioutil.ReadAll(file)
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Disposition", "attachment; filename=\""+fileName+"\"")
+	c.Data(http.StatusOK, "Content-Type", output)
+}
+
 // 下载中心页面
 func DownLoadCenter(c *gin.Context) {
 	ss, _ := SessionManager.CheckSession(c.Request)
+	type dir struct {
+		DirName  string
+		RealAddr string
+	}
+	dirs := []dir{
+		{"其他人上传的文件", "/download"},
+		{"主站文件", "/downloadMovies"},
+	}
+	fmt.Println(dirs)
 	c.HTML(http.StatusOK, "newDownloadPage.html", gin.H{
-		"usersUploadFiles": "/download",
-		"hostFiles":        "/downloadMovies",
 		"userHeadImageDir": UASManager.GetUASFileDir(ss.Get("accountNum").(string), "HeadImage", db),
+		"dirCount":         2,
+		"dirs":             dirs,
 	})
 }
 
@@ -202,7 +242,7 @@ func SignPagePost(c *gin.Context) {
 	u.Age, _ = strconv.Atoi(c.PostForm("UserAge"))
 	if u.Name == "" || u.Password == "" {
 		c.HTML(http.StatusOK, "newIndexPage.html", gin.H{
-			"alert": tools.JsAlert("用户名或者密码不准为空"),
+			"alert": "err",
 		})
 		return
 	}
@@ -213,11 +253,6 @@ func SignPagePost(c *gin.Context) {
 	uas := UASManager.InitUserAddrSpace(u.StuNo)
 	db.Create(&uas)
 	c.Redirect(http.StatusFound, "/")
-	/*c.HTML(http.StatusOK, "newUserSpace.html", gin.H{
-		"name":             u.Name + " 新人",
-		"finish":           u.CheckUsersIFMFinish(),
-		"userHeadImageDir": UASManager.GetUASFileDir(ss.Get("accountNum").(string), "HeadImage", db),
-	})*/
 }
 
 // 登录页提交
@@ -237,7 +272,7 @@ func LoginPagePost(c *gin.Context) {
 		} else {
 			fmt.Println(u.Name + " login wrong")
 			c.HTML(http.StatusOK, "newLoginPage.html", gin.H{
-				"alert": tools.JsAlert("用户名或密码错误，请重新登录！"),
+				"alert": "err",
 			})
 		}
 	}
@@ -246,15 +281,17 @@ func LoginPagePost(c *gin.Context) {
 // 用户上传提交
 func UsersUploadPost(c *gin.Context) {
 	file, err := c.FormFile("usersFile")
+	resend := "success"
 	if err != nil {
 		fmt.Println("a user's upload has err, please check what has happened.")
-		return
+		resend = "err"
+	} else {
+		dst := fmt.Sprintf("./Files/UsersUpload/%s", file.Filename)
+		c.SaveUploadedFile(file, dst)
 	}
-	dst := fmt.Sprintf("./Files/UsersUpload/%s", file.Filename)
-	c.SaveUploadedFile(file, dst)
 	ss, _ := SessionManager.CheckSession(c.Request)
 	c.HTML(http.StatusOK, "newUploadPage.html", gin.H{
-		"ifm":              tools.H5trans("<p><i>Upload success!</i></p>"),
+		"ifm":              resend,
 		"userHeadImageDir": UASManager.GetUASFileDir(ss.Get("accountNum").(string), "HeadImage", db),
 	})
 }
@@ -318,10 +355,14 @@ func main() {
 		userSpace.GET("/message", UserSpaceMessage)
 
 		// 用户发送消息表单到服务器
-		userSpace.POST("/message/sendMSG", UserSpaceMessageSendMSGPost)
+		userSpace.POST("/message-sendMSG", UserSpaceMessageSendMSGPost)
 
 		// 用户修改头像，上传文件到独立空间
-		userSpace.POST("/message/headImage", tools.AuthMiddleWare(SessionManager), UserSpaceHeadImagePost)
+		userSpace.POST("/message-headImage", UserSpaceHeadImagePost)
+
+		userSpace.GET("/cloud", UserSpaceCloud)
+
+		userSpace.POST("/cloud-download", UserSpaceCloudDownload)
 	}
 
 	router.GET("/downloadCenter", tools.AuthMiddleWare(SessionManager), DownLoadCenter)

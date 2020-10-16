@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8"> 
-    <title>SDUSTRS-我的空间</title>
+    <title>SDUSTRS-我的消息</title>
     <!--is also the sign page of the web site-->
 	<link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">  
     <link rel="icon" href="staticFile/icons/icon_Dorado.ico" type="image/x-icon"/>
@@ -25,15 +25,15 @@
             <li><a href="/uploadPage"><span class="glyphicon glyphicon-upload"></span>上传中心</a></li>
             <li class="dropdown">
                 <a href="" class="dropdown-toggle" data-toggle="dropdown">
-                    <img id="hi" width="24px" height="24px" src="">
+                    <img id="hi" width="24px" height="24px" src="staticFile/Fishes/Dorado.png">
                     我的
                     <span class="caret"></span>
                 </a>
                 <ul class="dropdown-menu">
-                <li><a href="/userSpace/message">消息</a></li>
-                <li><a href="/userSpace">个人资料</a></li>
-                <li><a href="##">云空间</a></li>
-                <li><a href="##">Others</a></li>
+                    <li><a href="/userSpace/message"><span class="glyphicon glyphicon-envelope"></span>消息</a></li>
+                    <li><a href="/userSpace"><span class="glyphicon glyphicon-th-list"></span>个人资料</a></li>
+                    <li><a href="/userSpace/cloud"><span class="glyphicon glyphicon-cloud"></span>云空间</a></li>
+                    <li><a href="##"><span class="glyphicon glyphicon-tree-deciduous"></span>Others</a></li>
                 </ul>
             </li>
             <li><a href="##"><span class="glyphicon glyphicon-stats"></span>关于我们</a></li>
@@ -50,14 +50,14 @@
     <div class="container">
         <div class="row">
             <div class="col-md-4">
-                <div class="panel panel-default">
+                <div class="panel panel-primary">
                     <div class="panel-heading">
                         <h4 class="panel-title"><b>发送器</b></h4>
                     </div>
                     <div class="panel-body">
-                        <p><lead>可用的公共资源</lead></p>
+                        <p><lead>输入指定接受者的学号和内容</lead></p>
                         <div>
-                            <form role="form" action="/userSpace/message/sendMSG" method="POST">
+                            <form role="form" action="/userSpace/message-sendMSG" method="POST">
                                 <div class="form-group">
                                     <div class="row">
                                         <div class="col-xs-3">
@@ -71,13 +71,12 @@
                                 </div>
                                 <div class="form-group">
                                     <label class="control-label">内容</label>
-                                    <textarea name="MSG_content" class="form-control"></textarea>
+                                    <textarea name="MSG_content" class="form-control" rows="10" style="resize: none;"></textarea>
                                 </div>
                                 <div class="form-group col-xs-5">
-                                    <input type="submit" class="btn btn-success" value="Send">
+                                    <input type="submit" class="btn btn-success" value="发送">
                                 </div>
                             </form>
-                            
                         </div>
                     </div>
                 </div>
@@ -93,10 +92,10 @@
                         <table class="table table-bordered table-hover table-striped">
                             <thead>
                                 <tr class="active">
-                                    <th>名称</th>
-                                    <th>地址</th>
-                                    <th>Content</th>
-                                    <th>Read</th>
+                                    <th>送信人</th>
+                                    <th>接收者</th>
+                                    <th>内容</th>
+                                    <th>已读</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -109,37 +108,39 @@
         </div>
     </div>
     <script>
-        document.getElementById("hi").src = "root/" + {{ .userHeadImageDir }} + "/headImage.jpg"
+        var msg = {{.}}
 
-        var nullReceiver = {{ .alert}}
-        document.getElementById("nullReceiver").innerText = nullReceiver;
-        var obp = {{ .msg}}
-            //window.alert(obp)
-        console.log(obp)
-        obj = JSON.parse(obp);
-        var tbody=document.querySelector("tbody");
-        for(var i=0;i<obj.length;i++)  //外面的for循环 是 行tr
-        {
-            var tr=document.createElement("tr");
-            tbody.appendChild(tr);
-            //3,往tr每一行里面创建单元格（跟数据有关系的3个单元格），td单元格的数量取决于每个对象的属性个数 for循环遍历对象 datas[i]
-            if(obj.length === 0){
-                var td=document.createElement("td");  //创建单元格
-                tr.appendChild(td);
-                td.innerHTML="No new messages";
-            }
-            var td=document.createElement("td");  //创建单元格
-            tr.appendChild(td);
-            td.innerHTML=obj[i].Sender; //把对象里面的属性值 datas[i][k]给td
-            var td=document.createElement("td");  //创建单元格
-            tr.appendChild(td);
-            td.innerHTML=obj[i].Receiver; //把对象里面的属性值 datas[i][k]给td
-            var td=document.createElement("td");  //创建单元格
-            tr.appendChild(td);
-            td.innerHTML=obj[i].Content; //把对象里面的属性值 datas[i][k]给td
-            var td=document.createElement("td");  //创建单元格
-            tr.appendChild(td);
-            td.innerHTML=obj[i].READ; //把对象里面的属性值 datas[i][k]给td
+        document.getElementById("hi").src = msg['userHeadImageDir'] + '/headImage.jpg'
+
+        var nullReceiver = msg['alert']
+        if(msg['alert'] != undefined)
+            document.getElementById('nullReceiver').innerText = nullReceiver
+        var obj = msg['messages']
+        
+        var tbody=document.querySelector('tbody')
+        
+        if(msg['messages'].length == 0){
+            var tr=document.createElement('tr')
+            tbody.appendChild(tr)
+            var td=document.createElement('td')
+            td.innerHTML = 'No more Message to you.'
+            tr.appendChild(td)
+        }
+        for(var i=0;i<obj.length;i++){
+            var tr=document.createElement('tr')
+            tbody.appendChild(tr)
+            var td=document.createElement('td')
+            tr.appendChild(td)
+            td.innerHTML=obj[i].Sender
+            var td=document.createElement('td')
+            tr.appendChild(td)
+            td.innerHTML=obj[i].Receiver
+            var td=document.createElement('td')
+            tr.appendChild(td)
+            td.innerHTML=obj[i].Content 
+            var td=document.createElement('td')
+            tr.appendChild(td)
+            td.innerHTML=obj[i].READ
         }
     </script>
 </body>

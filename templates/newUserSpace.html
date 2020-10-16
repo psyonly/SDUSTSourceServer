@@ -25,15 +25,15 @@
             <li><a href="/uploadPage"><span class="glyphicon glyphicon-upload"></span>上传中心</a></li>
             <li class="dropdown">
                 <a href="" class="dropdown-toggle" data-toggle="dropdown">
-                    <img id="hi" width="24px" height="24px" src="../statics/Fishes/Anchovy%20Star.png">
+                    <img id="hi" width="24px" height="24px" src="staticFile/Fishes/Anchovy%20Star.png">
                     我的
                     <span class="caret"></span>
                 </a>
                 <ul class="dropdown-menu">
-                <li><a href="/userSpace/message">消息</a></li>
-                <li><a href="/userSpace">个人资料</a></li>
-                <li><a href="##">云空间</a></li>
-                <li><a href="##">Others</a></li>
+                    <li><a href="/userSpace/message"><span class="glyphicon glyphicon-envelope"></span>消息</a></li>
+                    <li><a href="/userSpace"><span class="glyphicon glyphicon-th-list"></span>个人资料</a></li>
+                    <li><a href="/userSpace/cloud"><span class="glyphicon glyphicon-cloud"></span>云空间</a></li>
+                    <li><a href="##"><span class="glyphicon glyphicon-tree-deciduous"></span>Others</a></li>
                 </ul>
             </li>
             <li><a href="##"><span class="glyphicon glyphicon-stats"></span>关于我们</a></li>
@@ -58,14 +58,14 @@
             </div>
             <div class="col-md-4">
                 <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="text-success">
+                            <b>日志</b>
+                            <small class="text-success"></small>
+                        </h4>
+                    </div>
                     <div class="panel-body">
-                        <h3 class="text-success">
-                            日志
-                            <small>var 1.0.5</small>
-                        </h3>
-                        <p id="versionScript">
-
-                        </p>
+                        <p id="versionScript"></p>
                     </div>
                 </div>
             </div>
@@ -84,7 +84,7 @@
                         <tr><td>年龄</td><td>{{.age}}</td></tr>
                     </table>
                     <div class="panel-body">
-                        <form role="form" method="POST" action="/userSpace/message/headImage" enctype="multipart/form-data">
+                        <form role="form" method="POST" action="/userSpace/message-headImage" enctype="multipart/form-data">
                             <div class="form-group">
                                 <label class="control-label">修改头像</label>
                                 <input class="form-control" type="file" name="headImage">
@@ -97,9 +97,14 @@
         </div>
     </div>
     <script>
-        document.getElementById("hi").src = "root/" + {{ .userHeadImageDir }} + "/headImage.jpg"
+        var msg = {{ . }}
+        //console.log(msg)
+        /* for(v in msg){
+            console.log(msg[v])
+        } */
+        document.getElementById('hi').src = msg['userHeadImageDir'] + '/headImage.jpg'
 
-        document.getElementById("versionScript").innerHTML = {{ .versionScript}}
+        document.getElementById('versionScript').innerHTML = msg['versionScript']
     </script>
 </body>
 </html>

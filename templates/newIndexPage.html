@@ -2,13 +2,15 @@
 <html>
 <head>
 	<meta charset="utf-8"> 
-    <title>SDUSTRS-ResourceServerOfSDUST</title>
+    <title>SDUSTRS-ResourceServerOfSDUST欢迎新玩意</title>
     <!--is also the sign page of the web site-->
 	<link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">  
     <link rel="icon" href="staticFile/icons/icon_Dorado.ico" type="image/x-icon"/>
     <link rel="shortcut icon" href="staticFile/icons/icon_Dorado.ico" type="image/x-icon"/>
 	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
-	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bootcss.com/jquery.bootstrapvalidator/0.5.3/js/bootstrapValidator.min.js"></script>
+
 </head>
 <body>
    <div class="navbar navbar-default" role="navigation">
@@ -19,7 +21,7 @@
          </a>
       </div>
       <ul class="nav navbar-nav">
-         <li class="active"><a href=""><span class="glyphicon glyphicon-home"></span>主页</a></li>
+         <li class="active"><a href="/indexPage"><span class="glyphicon glyphicon-home"></span>主页</a></li>
          <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-star"></span>产品<span class="caret"></span></a>
             <ul class="dropdown-menu">
@@ -53,25 +55,25 @@
                     </div>
                 </div>
                 <div class="panel-body">
-                    <form role="form" method="POST" action="/sign">
+                    <form id="postForm" role="form" method="POST" action="/sign" >
                         <div class="form-group">
-                            <label class="control-label" for="stuno">学号</label>
+                            <label class="control-label" for="stuno">学号*</label>
                             <input id="stuno" name="UserStuNo" class="form-control" type="text" placeholder="student No...">
                         </div>
                         <div class="form-group">
-                            <label class="control-label" for="stuname">姓名</label>
+                            <label class="control-label" for="stuname">姓名*</label>
                             <input id="stuname" name="UserName" class="form-control" type="text" placeholder="username...">
                         </div>
                         <div class="form-group">
-                            <label class="control-label" for="pwd">密码</label>
+                            <label class="control-label" for="pwd">密码*</label>
                             <input id="pwd" name="UserPwd" class="form-control" type="password" placeholder="password...">
                         </div>
                         <div class="form-group">
                             <label class="control-label" for="stuage">年龄</label>
-                            <input id="stuage" name="UserAge" class="form-control" type="number" placeholder="age...">
+                            <input id="stuage" name="UserAge" class="form-control" type="text" placeholder="age...">
                         </div>
                         <div class="form-group">
-                            <label class="control-label" for="stuemail">邮箱</label>
+                            <label class="control-label" for="stuemail">邮箱*</label>
                             <input id="stuemail" name="UserEmail" class="form-control" type="email" placeholder="xxx@srs.com">
                         </div>
                         <div class="form-group">
@@ -81,24 +83,21 @@
                         <div class="form-group">
                             <div class="row">
                                 <div class="col-xs-4">
-                                    <input type="checkbox" value="ok">  
-                                    <span class="label label-primary">
-                                        确认条款
-                                    </span>
-                                    <a id="clause" class="label label-info" type="button" title="条款明细" 
-                                    data-container="body" data-toggle="popover" 
-                                    data-html="true" data-placement="top"
-                                    data-content="顶部的 Popover 中的一些内容">条款明细</a>
+                                    <a id="clauseBtn" class="btn btn-primary" type="button" title="注册成为会员的特权"
+                                    data-toggle="modal" data-target="#clauseModal">
+                                    会员
+                                    <span class="glyphicon glyphicon-gift"></span>
+                                    </a>
                                 </div>
-                                <div class="col-xs-3">
-                                    <span class="label label-warning">
-                                        已经有账号?
-                                    </span>
-                                    <a href="/">登录<span class="glyphicon glyphicon-log-in"></span></a>
+                                <div class="col-xs-2">
+                                    <a href="/" class="btn btn-danger">登录<span class="glyphicon glyphicon-log-in"></span></a>    
                                 </div>
                                 <div class="col-xs-2 col-xs-offset-2">
-                                    <button class="btn btn-success">
+                                    <button class="btn btn-success" type="submit">
                                     注册
+                                    <span class="glyphicon glyphicon-ok">
+
+                                    </span>
                                     </button>
                                 </div>
                             </div>
@@ -109,11 +108,121 @@
          </div>
       </div>
    </div>
-   {{ .alert }}
+   <div class="modal fade" id="clauseModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="clauseModalTitle">注册成为会员</h4>
+                </div>
+                <div id="clauseModalContent" class="modal-body">在这里添加一些文本</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="alertModalTitle"><b>服务器警告</b></h4>
+                </div>
+                <div id="alertModalContent" class="modal-body">密码或用户名错误</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">确认</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
    <script>
+        var msg = {{ . }}
+       
+        var ale = msg['alert']
+
+        if(msg['alert'] == 'err')
+            $('#alertModal').modal()// 这不是一个监听，这是一个调用
+
+        //????不知道什么功能
         $(function (){
         $("[data-toggle='popover']").popover();});
-        document.getElementById("clause").setAttribute("data-content", "1.如果您遵守该协议就可以学会<b>肉蛋葱🐓</b><br>2.您很呆哦<br>3.你是大司马")
+        document.getElementById("clauseModalContent").innerHTML = "1.如果您遵守该协议就可以学会<b>肉蛋葱🐓</b><br>2.您很呆哦<br>3.你是大司马"
+   </script>
+
+   <script>
+        $(function () {
+            $('form').bootstrapValidator({
+                message: 'This value is not valid',
+                live: 'submit',
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-refresh'
+                },
+                fields: {
+                    UserStuNo: {
+                        message: '用户名验证失败',
+                        validators: {
+                            notEmpty: {
+                                message: '学号不能为空'
+                            },
+                            stringLength: {
+                                min: 12,
+                                max: 12,
+                                message: '输入12位学号'
+                            },
+                            regexp: {
+                                regexp: /^20[0-9]{10}$/,
+                                message: '请输入正确的格式'
+                            }
+                        }
+                    },
+                    UserName: {
+                        validators: {
+                            notEmpty: {
+                                message: '姓名不能为空'
+                            },
+                            regexp: {
+                                regexp: /^[\u4E00-\u9FA5A-Za-z]{2,20}$/,
+                                message: '输入真实姓名'
+                            }
+                        }
+                    },
+                    UserPwd: {
+                        validators: {
+                            notEmpty: {
+                                message: '密码不能为空'
+                            },
+                            regexp: {
+                                regexp: /^[a-zA-Z0-9]{6,18}$/,
+                                message: '密码为6-18位字母数字组成'
+                            }
+                        }
+                    },
+                    UserAge: {
+                        validators: {
+                            
+                        }
+                    },
+                    UserEmail: {
+                        validators: {
+                            notEmpty: {
+                                message: 'Email不能为空'
+                            },
+                            emailAddress: {
+                                message: '格式不正确'
+                            }
+                        }
+                    },
+                    UserDomNo: {
+                        validators: {
+                            
+                        }
+                    },
+                }
+            });
+        });
    </script>
 </body>
 </html>

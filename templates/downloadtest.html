@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">  
+    <link rel="icon" href="staticFile/icons/icon_Dorado.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="staticFile/icons/icon_Dorado.ico" type="image/x-icon"/>
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <form action="/downloadTest" method="POST">
+        <input id="searchDir" type="text" name="dir">
+        <input type="submit">
+    </form>
+    <div id="direction">
+
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-8">
+                <table class="table table-condensed table-bordered table-hover">
+                    <thead>
+                        <tr class="active warning">
+                            <th width="25%"><span class="label label-info">当前目录</span></th>
+                            <th id="tmpDir" width="75%"></th>
+                        </tr>
+                        <tr class="active">
+                            <div>
+                                <th width="25%"><span class="label label-default">文件类型</span></th>
+                            </div>
+                            <div>
+                                <th width="75%"><span class="label label-default">文件地址</span></th>
+                            </div>
+                        </tr>
+                    </thead>
+                    <tbody id="render">
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        /* var msg = {{.}}
+        var files = msg['files']
+        
+        var dirs = document.getElementById('direction')
+        for(var i=0; i<files.length; i++){
+            var tpe = files[i].FileType
+            var str = files[i].FileAddr
+            var text = document.createElement('p')
+            text.innerHTML = '[' + tpe + ', ' + str + ']'
+            dirs.appendChild(text)
+        } */
+        var msg = {{.}}
+        console.log(msg)
+
+        var dict = {}
+
+        function TreeNode(name, type){
+            this.Name = (name === undefined ? null : name)
+            this.Type = (type === undefined ? 1 : type)
+            console.log('Est:', this.Type, this.Name)
+            if(this.Type == -1){
+                dict['root'] = this
+                this.Child = []
+                return
+            }else if(this.Type == 0)
+                this.Child = []
+            else
+                this.Child = null
+            SetTreeFather(this)
+            if(this.Type == 0)
+                dict[this.Name] = this
+        }
+        
+        function SetTreeFather(node){
+            var name = node.Name
+            for(var i=name.length; i>=0 && name[i]!='\\'; i--);
+            if(i >= 0){
+                var str = name.slice(0, i)
+                dict[str].Child.push(node)
+            }else{
+                dict['root'].Child.push(node)
+            }
+        }
+
+        // if the node's parent is not root it will return its parent else null
+        function GetParent(node){
+            var name = node.Name
+            for(var i=name.length; i>=0 && name[i]!='\\'; i--);
+            if(i > 0){
+                var str = name.slice(0, i)
+                return str
+            }
+            return null
+        }
+
+        function File2Tree(files){
+            var root = new TreeNode('\\', -1)
+            for(var i=1; i<files.length; i++){
+                var node = new TreeNode(files[i].FileAddr, files[i].FileType)
+            }
+            Render(dict['root'])
+            for(var i=0; i<dict['root'].Child.length; i++){
+                console.log(dict['root'].Child[i])
+            }
+        }
+
+        function Render(node){
+            document.getElementById('tmpDir').innerHTML = node.Name
+            var tbody = document.getElementById('render')
+            var arr = node.Child
+            
+            var render2table = function(element){
+                var tr = document.createElement('tr')
+                tbody.appendChild(tr)
+                var td1 = document.createElement('td')
+                tr.appendChild(td1)
+                // add span
+                var icon = document.createElement('span')
+                icon.classList = 'label label-default'
+                var typ = 'Unknow'
+                switch(element.Type){
+                    case 0:
+                        icon.classList = 'label label-warning'
+                        typ = '文件夹'
+                        break
+                    default :
+                        icon.classList = 'label label-success'
+                        typ = '文件'
+                        break
+                }
+                icon.innerHTML = typ
+                td1.appendChild(icon)
+                // add <a> & onclick func
+                var td2 = document.createElement('td')
+                tr.appendChild(td2)
+                var a = document.createElement('a')
+                //a.setAttribute('value', element.Name)
+                a.id = element.Name
+                a.classList = 'btn btn-link btn-xs'
+                a.innerHTML = element.Name
+                if(arr[i].Type == 0){
+                    a.onclick = function(){
+                        console.log(a.id)
+                        tbody.innerHTML = ''
+                        Render(dict[a.id])
+                    }
+                }else{
+                    a.onclick = function(){
+                        document.getElementById('searchDir').value = this.innerHTML
+                    }
+                }
+                td2.appendChild(a)
+            }
+            
+            var addParent = function (){// just render not real node
+                var tr = document.createElement('tr')
+                tbody.appendChild(tr)
+                var td1 = document.createElement('td')
+                tr.appendChild(td1)
+                // add span
+                var icon = document.createElement('span')
+                icon.classList = 'label label-primary'
+                var typ = '父目录'
+                icon.innerHTML = typ
+                td1.appendChild(icon)
+                // add <a> & onclick func
+                var td2 = document.createElement('td')
+                tr.appendChild(td2)
+                var a = document.createElement('a')
+                var par = GetParent(node)
+                console.log('par is', par, par == null)
+                a.id = (par === null ? 'root' : par)
+                a.classList = 'btn btn-link btn-xs'
+                a.innerHTML = '上一级'
+                // add onclick func
+                if(a.id != null){
+                    a.onclick = function(){
+                        console.log('ADD onclick FUNC', a.id)
+                        tbody.innerHTML = ''
+                        Render(dict[a.id])
+                    }
+                }
+                td2.appendChild(a)
+            }()
+
+            for(var i=0; i<arr.length; i++){
+                render2table(arr[i])
+            }
+        }
+
+        function AddSpace(num){
+            str = ''
+            for(var i=0; i<num; i++){
+                str += '--'
+            }
+            return str
+        }
+        var layer = 0
+        var NOW
+        function Walk(t){
+            //console.log('start')
+            console.log('|' + AddSpace(layer) + t.Name)
+            if(t.Child===null)return
+            layer++
+            for(var i=0; i<t.Child.length; i++){
+                Walk(t.Child[i])
+            }
+            layer--
+        }
+        //var root = new TreeNode('root', -1)
+        //var d = [new TreeNode('op.shell', 1), new TreeNode('ok.txt', 1)]
+        //var c = [new TreeNode('a.c', 1), new TreeNode('b.go', 0), new TreeNode('kk.js', 1)]
+        File2Tree(msg['files'])
+        Walk(dict['root'])
+    </script>
+</body>
+</html>

@@ -60,8 +60,15 @@ func (um *UASManager) GetFileDir() string {
 func (um *UASManager) GetUASFileDir(uid string, fileDirName string, db *gorm.DB) string {
 	fd := um.fileDir
 	uas := CheckUASFromDB(uid, db)
-	fd = fd + "/" + uas.UserAddr + "/" + fileDirName
+	fd = "root/" + fd + "/" + uas.UserAddr + "/" + fileDirName
 	return fd
+}
+
+// 获取当前用户的云空间目录 调用save包的功能 返回一个切片
+func (um *UASManager) GetUASCloudPaths(uid string, db *gorm.DB) []FilePath {
+	fd := um.GetUASFileDir(uid, "", db)
+	pfL := len(um.fileDir) + len(CheckUASFromDB(uid, db).UserAddr)
+	return WalkThroughDir(fd[5:], pfL)
 }
 
 // 保存指定用户的某个文件 返回一个保存路径，同时在数据库中刷新数据内容

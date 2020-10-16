@@ -8,7 +8,8 @@
     <link rel="icon" href="staticFile/icons/icon_Dorado.ico" type="image/x-icon"/>
     <link rel="shortcut icon" href="staticFile/icons/icon_Dorado.ico" type="image/x-icon"/>
 	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
-	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bootcss.com/jquery.bootstrapvalidator/0.5.3/js/bootstrapValidator.min.js"></script>
 </head>
 <body>
     <div class="navbar navbar-default" role="navigation">
@@ -19,7 +20,7 @@
             </a>
         </div>
         <ul class="nav navbar-nav">
-            <li><a href=""><span class="glyphicon glyphicon-home"></span>主页</a></li>
+            <li><a href="/indexPage"><span class="glyphicon glyphicon-home"></span>主页</a></li>
             <li class="active"><a href=""><span class="glyphicon glyphicon-th-large"></span>登录</a></li>
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-star"></span>产品<span class="caret"></span></a>
@@ -46,7 +47,7 @@
             <div class="col-md-4 col-md-offset-8">
                 <div class="panel panel-default">
                     <div class="panel-body">
-                        <form role="form" method="POST" action="/login">
+                        <form id="signForm" role="form" method="POST" action="/login">
                             <div>
                                 <label class="lead text-right text-success">
                                 <span class="glyphicon glyphicon-user"></span>
@@ -74,7 +75,7 @@
                                         </a>
                                     </div>
                                     <div class="col-xs-2 col-xs-offset-1">
-                                        <button class="btn btn-success">
+                                        <button class="btn btn-success" type="submit">
                                             登录
                                         </button>
                                     </div>
@@ -86,6 +87,58 @@
             </div>
         </div>
     </div>
-    {{ .alert }}
+    <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel"><b>服务器警告</b></h4>
+                </div>
+                <div id="clause" class="modal-body">密码或用户名错误</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">确认</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    <script>
+    var msg = {{.}}
+    
+    var ale = msg['alert']
+    //  监听服务器发送回的消息
+    if(ale == "err")
+        $('#alertModal').modal()
+
+    
+    $(function () {
+        $('form').bootstrapValidator({
+            message: 'This value is not valid',
+            //live: 'submitted',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {
+                stuNo: {
+                    message: '用户名验证失败',
+                    validators: {
+                        notEmpty: {
+                            message: '用户名不能为空'
+                        }
+                    }
+                },
+                pwd: {
+                    validators: {
+                        notEmpty: {
+                            message: '密码不能为空'
+                        }
+                    }
+                }
+            }
+        });
+    });
+    
+    </script>
 </body>
 </html>

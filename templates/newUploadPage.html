@@ -25,15 +25,15 @@
             <li><a href="/uploadPage"><span class="glyphicon glyphicon-upload"></span>上传中心</a></li>
             <li class="dropdown">
                 <a href="" class="dropdown-toggle" data-toggle="dropdown">
-                    <img id="hi" width="24px" height="24px" src="../statics/Fishes/Anchovy%20Star.png">
+                    <img id="hi" width="24px" height="24px" src="staticFile/Fishes/Anchovy%20Star.png">
                     我的
                     <span class="caret"></span>
                 </a>
                 <ul class="dropdown-menu">
-                <li><a href="/userSpace/message">消息</a></li>
-                <li><a href="/userSpace">个人资料</a></li>
-                <li><a href="##">云空间</a></li>
-                <li><a href="##">Others</a></li>
+                    <li><a href="/userSpace/message"><span class="glyphicon glyphicon-envelope"></span>消息</a></li>
+                    <li><a href="/userSpace"><span class="glyphicon glyphicon-th-list"></span>个人资料</a></li>
+                    <li><a href="/userSpace/cloud"><span class="glyphicon glyphicon-cloud"></span>云空间</a></li>
+                    <li><a href="##"><span class="glyphicon glyphicon-tree-deciduous"></span>Others</a></li>
                 </ul>
             </li>
             <li><a href="##"><span class="glyphicon glyphicon-stats"></span>关于我们</a></li>
@@ -50,20 +50,20 @@
     <div class="container">
         <div class="row">
             <div class="col-md-4">
-                <div class="panle panel-success">
-                    <div class="panel panel-heading">
-                        <h4 class="panel-title">Upload module</h4>
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        <h4 class="panel-title"><b>上传中心</b></h4>
                     </div>
-                    <div class="panel panel-body">
+                    <div class="panel-body">
                         <p>点击上传文件</p>
                         <div>
                             <form method="POST" action="/usersUpload" enctype="multipart/form-data">
                                 <input class="form-control" type="file" value="select a file" name="usersFile">
                                 <input class="form-control" type="submit" value="upload">
+                                <label id="ifm" class="control-label">
+
+                                </label>
                             </form>
-                            <div>
-                                {{ .ifm }}
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -71,7 +71,15 @@
         </div>
     </div>
     <script>
-        document.getElementById("hi").src = "root/" + {{.userHeadImageDir}} + "/headImage.jpg"
+        var msg = {{ . }}
+        if(msg['ifm'] != undefined){
+            if(msg['ifm'] == 'success')
+                document.getElementById('ifm').innerHTML = msg['ifm']
+            else
+                document.getElementById('ifm').innerHTML = '上传文件出现错误' + msg['ifm']
+        }
+
+        document.getElementById("hi").src = msg['userHeadImageDir'] + '/headImage.jpg'
     </script>
 </body>
 </html>
